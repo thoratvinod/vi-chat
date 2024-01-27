@@ -70,7 +70,7 @@ func login(w http.ResponseWriter, r *http.Request) (any, common.ErrorResponse) {
 	expiresAt := time.Now().Add(1000 * time.Minute).Unix()
 
 	// form jwt token
-	tk := &token{
+	tk := &Token{
 		UserID: user.ID,
 		Email:  user.Email,
 		StandardClaims: &jwt.StandardClaims{
