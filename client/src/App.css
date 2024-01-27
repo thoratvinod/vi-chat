@@ -1,0 +1,31 @@
+/* src/App.css */
+.app {
+  display: flex;
+}
+
+.left-sidebar {
+  width: 150px;
+  padding: 10px;
+  background-color: #f0f0f0;
+}
+
+.left-sidebar button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.contact-list {
+  flex: 1;
+  padding: 10px;
+}
+
+.message-list {
+  flex: 2;
+  padding: 10px;
+  background-color: #e0e0e0;
+}
+
+.message-list div {
+  margin-bottom: 10px;
+}
