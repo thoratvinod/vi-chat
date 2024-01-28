@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/thoratvinod/vi-chat/inithandlers"
-	"github.com/thoratvinod/vi-chat/usermgmt"
+	"github.com/thoratvinod/vi-chat/server/src/inithandlers"
+	"github.com/thoratvinod/vi-chat/server/src/usermgmt"
 )
 
 func main() {

@@ -7,9 +7,9 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/websocket"
-	"github.com/thoratvinod/vi-chat/common"
-	"github.com/thoratvinod/vi-chat/messagemgmt"
-	"github.com/thoratvinod/vi-chat/usermgmt"
+	"github.com/thoratvinod/vi-chat/server/src/common"
+	"github.com/thoratvinod/vi-chat/server/src/messagemgmt"
+	"github.com/thoratvinod/vi-chat/server/src/usermgmt"
 	"gorm.io/gorm"
 )
 

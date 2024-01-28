@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/thoratvinod/vi-chat/common"
+	"github.com/thoratvinod/vi-chat/server/src/common"
 	"gorm.io/gorm"
 )
 
