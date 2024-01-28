@@ -29,6 +29,8 @@ const (
 	ErrLoginFailed
 	ErrSignupFailed
 	ErrDBOperationFailed
+	ErrAuthJWTExpired
+	ErrAuthInvalidJWT
 )
 
 // Error messages by error codes
@@ -37,11 +39,17 @@ var errorMessages = map[ErrorCode]string{
 	ErrInvalidInput:       "Received invalid input",
 	ErrLoginFailed:        "Login failed",
 	ErrDBOperationFailed:  "DB operation failed",
+	ErrAuthJWTExpired:     "AuthJWTToken expired, please authenticate",
+	ErrAuthInvalidJWT:     "Invalid AuthJWTToken provided",
 }
 
 // HTTP status code by error codes
 var httpMapper = map[ErrorCode]int{
 	ErrInteralServerError: http.StatusInternalServerError,
+	ErrLoginFailed:        http.StatusForbidden,
+	ErrSignupFailed:       http.StatusForbidden,
+	ErrAuthJWTExpired:     http.StatusForbidden,
+	ErrAuthInvalidJWT:     http.StatusForbidden,
 }
 
 func NewErrorResponse(code ErrorCode, message string) ErrorResponse {

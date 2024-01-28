@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/thoratvinod/vi-chat/usermgmt"
+	"github.com/thoratvinod/vi-chat/server/src/usermgmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

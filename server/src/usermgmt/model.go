@@ -16,13 +16,13 @@ type User struct {
 	Password  string
 }
 
-type token struct {
+type Token struct {
 	UserID         uint
 	Email          string
 	StandardClaims *jwt.StandardClaims
 }
 
-func (t *token) Valid() error {
+func (t *Token) Valid() error {
 	expirationTime := time.Unix(t.StandardClaims.ExpiresAt, 0)
 	if time.Now().After(expirationTime) {
 		return fmt.Errorf("JWT token is expired")
