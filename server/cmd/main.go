@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	api "github.com/thoratvinod/vi-chat/server/api/v1"
-	"github.com/thoratvinod/vi-chat/server/pkg/user"
 	"github.com/thoratvinod/vi-chat/server/inithandlers"
+	"github.com/thoratvinod/vi-chat/server/pkg/user"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("DB connection attempt failed, err=%+v", err)
 	}
 	api.SetupPingRoute()
-	api.SetWebsocketRoute()
+	api.SetWebsocketRoute(dbConn)
 	userRepo := user.UserRepository{DB: dbConn}
 	userService := user.UserService{UserRepo: &userRepo}
 	userHandler := user.UserHandler{UserService: &userService}

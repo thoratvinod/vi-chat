@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: include redis saving as well
 type DMRepository struct {
 	DB *gorm.DB
 }

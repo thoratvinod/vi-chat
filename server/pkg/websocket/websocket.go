@@ -7,9 +7,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/thoratvinod/vi-chat/server/pkg/common/auth"
-	"github.com/thoratvinod/vi-chat/server/pkg/common/connmanager"
 	httpCommon "github.com/thoratvinod/vi-chat/server/pkg/common/http"
-	"github.com/thoratvinod/vi-chat/server/pkg/common/message"
+	msgCommon "github.com/thoratvinod/vi-chat/server/pkg/common/message"
+	"github.com/thoratvinod/vi-chat/server/pkg/message"
 )
 
 var upgrader = websocket.Upgrader{
@@ -17,21 +17,15 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var connManager *connmanager.ConnManager
-
-func init() {
-	connManager = &connmanager.ConnManager{
-		MsgQ:          make(chan *message.Message),
-		MsgChannelMap: make(map[uint]chan *message.Message),
-		ConnMap:       make(map[uint]*websocket.Conn),
-	}
+type WebsocketHandler struct {
+	MessageHandler message.MessageHandler
 }
 
-func reader(conn *websocket.Conn, claims *auth.Token) {
-	connManager.AddConnection(claims.UserID, conn)
+func (handler *WebsocketHandler) reader(conn *websocket.Conn, claims *auth.Token) {
+	handler.MessageHandler.ConnManager.AddConnection(claims.UserID, conn)
 	log.Printf("Established connection, userID=%+v", claims.UserID)
 	for {
-		msg := message.Message{}
+		msg := msgCommon.Message{}
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			errResp := httpCommon.ErrorResponse{
@@ -41,11 +35,18 @@ func reader(conn *websocket.Conn, claims *auth.Token) {
 			conn.Close()
 			return
 		}
-		connManager.HandleMessage(&msg)
+		err = handler.MessageHandler.HandleMessage(&msg)
+		if err != nil {
+			errResp := httpCommon.ErrorResponse{
+				Message: fmt.Sprintf("invalid content received ; %s", err.Error()),
+			}
+			conn.WriteJSON(errResp)
+			continue
+		}
 	}
 }
 
-func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (handler *WebsocketHandler) WSHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	jwtTokenStr, err := auth.ExtractJWTToken(r)
@@ -63,5 +64,5 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		httpCommon.HandleError(w, fmt.Errorf("internal server error ; %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	reader(ws, tokenClaims)
+	handler.reader(ws, tokenClaims)
 }
