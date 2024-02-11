@@ -21,9 +21,9 @@ type connManager struct {
 	// Queue is responsible for consuming message and again distribute to specifc user channels
 	msgQ chan *message.Message
 	// UserID to user specific channel mapping
-	msgChannelMap sync.Map
+	msgChannelMap MessageChannelMap
 	// UserID to websocket connection mapping
-	connMap sync.Map
+	connMap ConnectionMap
 	// MaxLimit for connections
 	maxLimit int32
 	// active connections
@@ -33,8 +33,8 @@ type connManager struct {
 func NewConnManager(maxLimit int32) ConnManager {
 	connMgr := connManager{
 		msgQ:          make(chan *message.Message),
-		msgChannelMap: sync.Map{},
-		connMap:       sync.Map{},
+		msgChannelMap: MessageChannelMap{syncMap: sync.Map{}},
+		connMap:       ConnectionMap{syncMap: sync.Map{}},
 		maxLimit:      maxLimit,
 	}
 	// message processor
@@ -46,8 +46,8 @@ func NewConnManager(maxLimit int32) ConnManager {
 
 func (cm *connManager) AddConnection(userID uint, conn *websocket.Conn) {
 	userMsgChan := make(chan *message.Message, 10)
-	cm.msgChannelMap.Store(userID, userMsgChan)
-	cm.connMap.Store(userID, conn)
+	cm.msgChannelMap.Put(userID, userMsgChan)
+	cm.connMap.Put(userID, conn)
 	go cm.processUserMessageChannel(userID, userMsgChan)
 	cm.activeConns.Add(1)
 }

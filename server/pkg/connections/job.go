@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/thoratvinod/vi-chat/server/pkg/common/message"
 )
 
 // removes inactive connection
@@ -27,14 +26,9 @@ func (cm *connManager) connectionSanitizer() {
 		})
 		for _, userID := range staleUserConns {
 			cm.connMap.Delete(userID)
-			val, ok := cm.msgChannelMap.Load(userID)
-			if !ok {
-				log.Printf("userMsgChan is not found for userID=%+v\n", userID)
-				continue
-			}
-			userMsgChan, ok := val.(chan *message.Message)
-			if !ok {
-				log.Printf("type assertion failed for userMsgChan in connectionSanitizer job for userID=%+v\n", userID)
+			userMsgChan, err := cm.msgChannelMap.Get(userID)
+			if err != nil {
+				log.Printf("error in connectionSanitizer, err=%+v", err.Error())
 				continue
 			}
 			close(userMsgChan)

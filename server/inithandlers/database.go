@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/thoratvinod/vi-chat/server/pkg/dm"
+	"github.com/thoratvinod/vi-chat/server/pkg/group"
 	"github.com/thoratvinod/vi-chat/server/pkg/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,7 +33,13 @@ func InitDatabase() (*gorm.DB, error) {
 }
 
 func migrate(db *gorm.DB) error {
-	err := db.AutoMigrate(user.User{}, dm.DirectMessage{})
+	err := db.AutoMigrate(
+		user.User{},
+		dm.DirectMessage{},
+		group.Group{},
+		group.GroupMessage{},
+		group.GroupMessageStatus{},
+	)
 	if err != nil {
 		return fmt.Errorf("database migration failed, err=%+v", err.Error())
 	}

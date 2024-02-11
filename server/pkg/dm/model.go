@@ -1,14 +1,8 @@
 package dm
 
-import "gorm.io/gorm"
-
-type DMStatus uint
-
-const (
-	DMStatusNone DMStatus = iota
-	DMStatusCreated
-	DMStatusSent
-	DMStatusSeen
+import (
+	commonMsg "github.com/thoratvinod/vi-chat/server/pkg/common/message"
+	"gorm.io/gorm"
 )
 
 type DirectMessage struct {
@@ -16,6 +10,6 @@ type DirectMessage struct {
 	SenderUserID   uint
 	ReceiverUserID uint
 	Content        string
-	Status         DMStatus
+	Status         commonMsg.MessageStatus
 	TimeStamp      int64
 }

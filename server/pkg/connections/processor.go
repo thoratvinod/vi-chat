@@ -1,9 +1,9 @@
 package connections
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/gorilla/websocket"
 	"github.com/thoratvinod/vi-chat/server/pkg/common/message"
 )
 
@@ -16,22 +16,41 @@ func (cm *connManager) startMessageProcessor() {
 	}()
 	for {
 		msg, more := <-cm.msgQ
-		val, ok := cm.msgChannelMap.Load(msg.ReceiverID)
-		if !ok {
-			log.Printf("can't find user's message channel in MsgChannelMap, userID=%+v, msg=%+v\n",
-				msg.ReceiverID, msg)
+		if !more {
+			return
+		}
+		if msg.MsgType == message.GroupMessage {
+			if err := cm.handleGroupMessage(msg); err != nil {
+				log.Printf("got error while processing group message, err=%+v", err.Error())
+			}
 			continue
 		}
-		msgUserChan, ok := val.(chan *message.Message)
-		if !ok {
-			log.Printf("type assertion failed in StartMessageProcessor, msg=%+v\n", msg)
+		msgUserChan, err := cm.msgChannelMap.Get(msg.ReceiverID)
+		if err != nil {
+			log.Printf("error in startMessageProcessor, err=%v", err.Error())
 			continue
 		}
 		msgUserChan <- msg
-		if !more {
-			break
-		}
 	}
+}
+
+func (cm *connManager) handleGroupMessage(msg *message.Message) error {
+	if len(msg.MemberIDs) == 0 {
+		return fmt.Errorf("member IDs array is empty")
+	}
+	errsIDs := []uint{}
+	for _, memberID := range msg.MemberIDs {
+		msgUserChan, err := cm.msgChannelMap.Get(memberID)
+		if err != nil {
+			errsIDs = append(errsIDs, memberID)
+			continue
+		}
+		msgUserChan <- msg
+	}
+	if len(errsIDs) != 0 {
+		return fmt.Errorf("error while sending message to userMsgChannel, memberIDs=%+v", errsIDs)
+	}
+	return nil
 }
 
 func (cm *connManager) processUserMessageChannel(userID uint, userMsgQ chan *message.Message) {
@@ -48,15 +67,10 @@ func (cm *connManager) processUserMessageChannel(userID uint, userMsgQ chan *mes
 			return
 		}
 		log.Printf("received message for userID=%v, message=%v", userID, msg)
-		val, ok := cm.connMap.Load(userID)
-		if !ok {
-			log.Printf("can't find connection for userID, userID=%+v, msg=%+v\n", userID, msg)
-			return
-		}
-		conn, ok := val.(*websocket.Conn)
-		if !ok {
-			log.Printf("type assertion failed in processUserMessageChannel, msg=%+v\n", msg)
-			return
+		conn, err := cm.connMap.Get(userID)
+		if err != nil {
+			log.Printf("error in processUserMessageChannel, err=%v", err.Error())
+			continue
 		}
 		conn.WriteJSON(msg)
 	}
